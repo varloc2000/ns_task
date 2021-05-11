@@ -11,15 +11,11 @@ services:
         image: nginx:1.15.0
         ports:
             - 127.0.0.1:${NGINX_PORT}:80
-#            - 443:443
+            - 443:443
         volumes:
             - .:/app:cached
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:cached
-            - ./docker/ssl/*.key /etc/ssl/private/
-            - ./docker/ssl/*.crt /etc/ssl/certs/
-        environment:
-            CRT: new-selfsigned.crt
-            KEY: new-selfsigned.key
+            - ./docker/ssl:/etc/nginx/certs
         container_name: securestorage_nginx
 
     mysql:
