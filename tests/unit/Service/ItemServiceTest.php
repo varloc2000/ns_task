@@ -31,15 +31,30 @@ class ItemServiceTest extends TestCase
 
     public function testCreate(): void
     {
-        /** @var User */
+        /** @var User $user */
         $user = $this->createMock(User::class);
         $data = 'secret data';
 
         $expectedObject = new Item();
         $expectedObject->setUser($user);
+        $expectedObject->setData($data);
 
         $this->entityManager->expects($this->once())->method('persist')->with($expectedObject);
+        $this->entityManager->expects($this->once())->method('flush');
 
         $this->itemService->create($user, $data);
+    }
+
+    public function testUpdate(): void
+    {
+        /** @var Item|MockObject $item */
+        $item = $this->createMock(Item::class);
+        $data = 'updated secret data';
+
+        $item->expects($this->once())->method('setData')->with($data);
+        $this->entityManager->expects($this->once())->method('persist')->with($item);
+        $this->entityManager->expects($this->once())->method('flush');
+
+        $this->itemService->update($item, $data);
     }
 }

@@ -9,7 +9,9 @@ RUN apt-get update -yqq && \
     gzip \
     libzip-dev \
     libicu-dev \
-    nano
+    nano \
+    acl \
+    procps
 
 RUN docker-php-ext-configure intl 
 
@@ -26,3 +28,10 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" &&
     chmod +x /usr/local/bin/composer
 
 WORKDIR /app
+
+# Fix var directory permission issue
+# @see https://symfony.com/doc/current/setup/file_permissions.html#using-acl-on-a-system-that-supports-setfacl-linux-bsd
+RUN mkdir var && \
+    HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx' | grep -v root | head -1 | cut -d\  -f1) && \
+    setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var && \
+    setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX var

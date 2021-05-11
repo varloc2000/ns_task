@@ -5,8 +5,6 @@ namespace App\Tests;
 use App\Repository\ItemRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use App\Repository\UserRepository;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
 
 class ItemControllerTest extends WebTestCase
 {
@@ -16,7 +14,6 @@ class ItemControllerTest extends WebTestCase
 
         $userRepository = static::$container->get(UserRepository::class);
         $itemRepository = static::$container->get(ItemRepository::class);
-        $entityManager = static::$container->get(EntityManagerInterface::class);
 
         $user = $userRepository->findOneByUsername('john');
 
@@ -30,8 +27,41 @@ class ItemControllerTest extends WebTestCase
         $client->request('GET', '/item');
 
         $this->assertResponseIsSuccessful();
-        $this->assertStringContainsString('very secure new item data', $client->getResponse()->getContent());
+        $this->assertStringContainsString($data, $client->getResponse()->getContent());
 
-        $userRepository->findOneByData($data);
+        $itemRepository->findOneByData($data);
+    }
+
+    public function testUpdate()
+    {
+        $client = static::createClient();
+
+        $userRepository = static::$container->get(UserRepository::class);
+        $itemRepository = static::$container->get(ItemRepository::class);
+
+        $user = $userRepository->findOneByUsername('john');
+
+        $client->loginUser($user);
+
+        $data = 'very secure new item data';
+        $updateData = 'UPDATED very secure new item data';
+
+        $newItemBody = ['data' => $data];
+
+        $client->request('POST', '/item', $newItemBody);
+        $client->request('GET', '/item');
+
+        $itemsResponse = json_decode($client->getResponse()->getContent(), true);
+
+        $updateItemBody = ['id' => $itemsResponse[0]['id'], 'data' => $updateData];
+
+        $client->request('PUT', '/item', $updateItemBody);
+
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/item');
+        $this->assertStringContainsString($updateData, $client->getResponse()->getContent());
+
+        $itemRepository->findOneByData($updateData);
     }
 }
