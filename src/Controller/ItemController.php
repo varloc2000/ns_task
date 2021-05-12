@@ -7,11 +7,12 @@ namespace App\Controller;
 use App\Entity\Item;
 use App\Service\ItemService;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
 
 class ItemController extends AbstractController
 {
@@ -44,7 +45,7 @@ class ItemController extends AbstractController
         $data = $request->get('data');
 
         if (empty($data)) {
-            return $this->json(['error' => 'No data parameter']);
+            throw new BadRequestHttpException('No "data" parameter in request');
         }
 
         $itemService->create($this->getUser(), $data);
@@ -59,13 +60,13 @@ class ItemController extends AbstractController
     public function delete(Request $request, int $id): JsonResponse
     {
         if (empty($id)) {
-            return $this->json(['error' => 'No data parameter'], Response::HTTP_BAD_REQUEST);
+            throw new BadRequestHttpException('No "id" parameter in request');
         }
 
         $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
 
         if ($item === null) {
-            return $this->json(['error' => 'No item'], Response::HTTP_BAD_REQUEST);
+            throw new NotFoundHttpException('No item found');
         }
 
         $manager = $this->getDoctrine()->getManager();
@@ -84,20 +85,20 @@ class ItemController extends AbstractController
         $data = $request->get('data');
 
         if (empty($data)) {
-            return $this->json(['error' => 'No data parameter']);
+            throw new BadRequestHttpException('No "data" parameter in request');
         }
 
         $id = $request->get('id');
 
         if (empty($id)) {
-            return $this->json(['error' => 'No id parameter'], Response::HTTP_BAD_REQUEST);
+            throw new BadRequestHttpException('No "id" parameter in request');
         }
 
         /** @var Item $item */
         $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
 
         if ($item === null) {
-            return $this->json(['error' => 'No item'], Response::HTTP_BAD_REQUEST);
+            throw new NotFoundHttpException('No item found');
         }
 
         $itemService->update($item, $data);

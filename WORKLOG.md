@@ -12,4 +12,5 @@
 11. Updated Makefile init section: added openssl cert generation step before building docker.
 12. Updated nginx docker-compose section to mount ssl certs volume and add 443 port forwarding.
 13. Installed symfony profiler package in order to pre-check how fast is API.
-14. 
+14. Refactor. Added exception listener to convert errors to json response (keep BC of response structure).
+15. 
