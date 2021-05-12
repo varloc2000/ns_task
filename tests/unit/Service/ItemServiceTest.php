@@ -4,6 +4,8 @@ namespace App\Tests\Unit;
 
 use App\Entity\Item;
 use App\Entity\User;
+use App\Exception\ModelNotFoundException;
+use App\Repository\ItemRepository;
 use App\Service\ItemService;
 use PHPUnit\Framework\TestCase;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,15 +19,22 @@ class ItemServiceTest extends TestCase
     private $entityManager;
 
     /**
+     * @var ItemRepository|MockObject
+     */
+    private $itemRepository;
+
+    /**
      * @var ItemService
      */
     private $itemService;
 
     public function setUp(): void
     {
-        /** @var EntityManagerInterface */
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        
+        $this->itemRepository = $this->createMock(ItemRepository::class);
+
+        $this->entityManager->expects($this->once())->method('getRepository')->willReturn($this->itemRepository);
+
         $this->itemService = new ItemService($this->entityManager);
     }
 
@@ -47,14 +56,51 @@ class ItemServiceTest extends TestCase
 
     public function testUpdate(): void
     {
-        /** @var Item|MockObject $item */
-        $item = $this->createMock(Item::class);
         $data = 'updated secret data';
+        $expectedItem = new Item();
+        $expectedItem->setData($data);
 
-        $item->expects($this->once())->method('setData')->with($data);
-        $this->entityManager->expects($this->once())->method('persist')->with($item);
+        $this->itemRepository->expects($this->once())->method('find')->with($this->isType('int'))->willReturn(new Item());
+        $this->entityManager->expects($this->once())->method('persist')->with($expectedItem);
         $this->entityManager->expects($this->once())->method('flush');
 
-        $this->itemService->update($item, $data);
+        $this->itemService->update(1, $data);
+    }
+
+    public function testUpdateError(): void
+    {
+        $data = 'updated secret data';
+        $expectedItem = new Item();
+        $expectedItem->setData($data);
+
+        $this->itemRepository->expects($this->once())->method('find')->with($this->isType('int'))->willReturn(null);
+        $this->entityManager->expects($this->never())->method('persist');
+        $this->entityManager->expects($this->never())->method('flush');
+
+        $this->expectException(ModelNotFoundException::class);
+
+        $this->itemService->update(1, $data);
+    }
+
+    public function testDelete(): void
+    {
+        $expectedItem = new Item();
+
+        $this->itemRepository->expects($this->once())->method('find')->with($this->isType('int'))->willReturn($expectedItem);
+        $this->entityManager->expects($this->once())->method('remove')->with($expectedItem);
+        $this->entityManager->expects($this->once())->method('flush');
+
+        $this->itemService->delete(1);
+    }
+
+    public function testDeleteError(): void
+    {
+        $this->itemRepository->expects($this->once())->method('find')->with($this->isType('int'))->willReturn(null);
+        $this->entityManager->expects($this->never())->method('remove');
+        $this->entityManager->expects($this->never())->method('flush');
+
+        $this->expectException(ModelNotFoundException::class);
+
+        $this->itemService->delete(1);
     }
 }

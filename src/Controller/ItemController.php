@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Item;
+use App\Exception\ApplicationException;
+use App\Exception\ModelNotFoundException;
 use App\Service\ItemService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -20,9 +22,9 @@ class ItemController extends AbstractController
      * @Route("/item", name="item_list", methods={"GET"})
      * @IsGranted("ROLE_USER")
      */
-    public function list(): JsonResponse
+    public function list(ItemService $itemService): JsonResponse
     {
-        $items = $this->getDoctrine()->getRepository(Item::class)->findBy(['user' => $this->getUser()]);
+        $items = $itemService->getAllByUser($this->getUser());
 
         $allItems = [];
         foreach ($items as $item) {
@@ -57,21 +59,17 @@ class ItemController extends AbstractController
      * @Route("/item/{id}", name="items_delete", methods={"DELETE"})
      * @IsGranted("ROLE_USER")
      */
-    public function delete(Request $request, int $id): JsonResponse
+    public function delete(Request $request, int $id, ItemService $itemService): JsonResponse
     {
         if (empty($id)) {
             throw new BadRequestHttpException('No "id" parameter in request');
         }
 
-        $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
-
-        if ($item === null) {
-            throw new NotFoundHttpException('No item found');
+        try {
+            $itemService->delete($id);
+        } catch (ApplicationException $e) {
+            throw new NotFoundHttpException($e->getMessage());
         }
-
-        $manager = $this->getDoctrine()->getManager();
-        $manager->remove($item);
-        $manager->flush();
 
         return $this->json([]);
     }
@@ -88,20 +86,17 @@ class ItemController extends AbstractController
             throw new BadRequestHttpException('No "data" parameter in request');
         }
 
-        $id = $request->get('id');
+        $id = (int) $request->get('id');
 
         if (empty($id)) {
             throw new BadRequestHttpException('No "id" parameter in request');
         }
 
-        /** @var Item $item */
-        $item = $this->getDoctrine()->getRepository(Item::class)->find($id);
-
-        if ($item === null) {
-            throw new NotFoundHttpException('No item found');
+        try {
+            $itemService->update($id, $data);
+        } catch (ApplicationException $e) {
+            throw new NotFoundHttpException($e->getMessage());
         }
-
-        $itemService->update($item, $data);
 
         return $this->json([]);
     }
