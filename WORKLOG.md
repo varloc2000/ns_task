@@ -8,9 +8,13 @@
 7. Fix existing tests.
 8. Added PATCH /item/{id} endpoint
 9. Covered update endpoint with unit and functional tests. Updated PUT /item endpoint in Postman collection.
-10. Updated Nginx container default.config in order to add 433 ssl server and redirect all 80 port income requests to it.
-11. Updated Makefile init section: added openssl cert generation step before building docker.
-12. Updated nginx docker-compose section to mount ssl certs volume and add 443 port forwarding.
-13. Installed symfony profiler package in order to pre-check how fast is API.
-14. Refactor. Added exception listener to convert errors to json response (keep BC of response structure).
-15. 
+10. Make API secure:
+	- Updated Nginx container default.config in order to add 433 ssl server and redirect all 80 port income requests to it.
+	- Updated Makefile init section: added openssl cert generation step before building docker.
+	- Updated nginx docker-compose section to mount ssl certs volume and add 443 port forwarding.
+11. Make API fast:
+	- Installed symfony profiler package in order to pre-check how fast is API.
+	- Tuned Opcache parameters a bit.
+
+12. Refactor:
+	- Added exception listener to convert errors to json response (keep BC of response structure).

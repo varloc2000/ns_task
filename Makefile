@@ -17,6 +17,7 @@ init:
 	docker-compose exec php php bin/console doctrine:fixtures:load --no-interaction
 
 build:
+	$(shell chmod +x ./build/build.sh)
 	build/build.sh
 
 tests:

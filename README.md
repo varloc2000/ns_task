@@ -11,6 +11,9 @@
 	- Builds and runs docker containers configured in `docker-compose.yml`
 	- Creates symfony database, loads migrations and fixtures data
 
+Note: Since SSL certificate is self signed - clients (browser/postman etc) might block requests until risks will be accepted. 
+In Postman it's required to turn Off check certificate validity in settings.
+
 * Open in browser: http://secure-storage.localhost:8000/item Should get `Full authentication is required to access this resource.` error, because first you need to make `login` call (see `postman_collection.json` or `SecurityController` for more info).
 
 ### Run tests
