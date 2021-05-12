@@ -1,3 +1,4 @@
+## WORKLOG
 0. Investigated project: checked docker setup; checked symfony setup and configurations; checked makefile commands; checked postman collection; checked application domain.
 1. Updated .env file to add more MYSQL related variables and use it in DATABASE_URL.
 2. Init project using `make init`. (run twice since mysql have some startup delay and first run leads to error)
@@ -19,3 +20,9 @@
 12. Refactor:
 	- Added exception listener to convert errors to json response (keep BC of response structure).
 13. Add more Unit tests.
+
+## NOTES
+
+- SSL implementation is not production ready - To make it production ready I would suggest adding separate container with dnsrobocert in order to autogenerate and renew Letsencrypt certificates.
+- Codebase is OK now for small API but can be more refactored and improved in terms of structure. I would suggest implement data transformers layer, separate ItemService to separate use-case classes, add application logging, replace functional tests with behat.
+- Speed improvement was done without deep analysis. Better would be create a performance test first and then experiment with opcache and other optimizations.
